@@ -1,6 +1,7 @@
 import express from "express";
 import { Prisma, PrismaClient } from "@prisma/client";
 import "dotenv/config";
+import e from "express";
 
 const app = express();
 const client = new PrismaClient();
@@ -65,6 +66,61 @@ app.get("/tasks/:id", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: "Something went wrong!!" });
+  }
+});
+
+app.put("/tasks/:id", async (req, res) => {
+  try {
+    const { title, description, isCompleted } = req.body;
+    const { id } = req.params;
+    const tasks = await client.tasks.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        isCompleted,
+      },
+    });
+    res.status(200).json(tasks);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Something went wrong!!" });
+  }
+});
+
+// Update a Task
+// app.patch("/tasks/:id", async (req, res) => {
+//   try {
+//     const { title, description } = req.body;
+//     const { id } = req.params;
+//     const tasks = await client.tasks.update({
+//       where: {
+//         id,
+//       },
+//       data: {
+//         title: title && title,
+//         description: description && description,
+//       },
+//     });
+//     res.status(200).json(tasks);
+//   } catch (e) {
+//     res.status(500).json({ message: "Something went wrong!!" });
+//   }
+// });
+
+// Deleting a task
+app.delete(`/tasks/:id`, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await client.tasks.delete({
+      where: { id },
+    });
+    return res.status(200).json({
+      message: `Task deleted `,
+    });
+  } catch (error) {
+    console.error(e);
+    res.status(500).json({ message: `Something went wrong` });
   }
 });
 
