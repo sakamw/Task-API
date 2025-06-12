@@ -87,26 +87,6 @@ app.put("/tasks/:id", async (req, res) => {
   }
 });
 
-// Update a Task
-// app.patch("/tasks/:id", async (req, res) => {
-//   try {
-//     const { title, description } = req.body;
-//     const { id } = req.params;
-//     const tasks = await client.tasks.update({
-//       where: {
-//         id,
-//       },
-//       data: {
-//         title: title && title,
-//         description: description && description,
-//       },
-//     });
-//     res.status(200).json(tasks);
-//   } catch (e) {
-//     res.status(500).json({ message: "Something went wrong!!" });
-//   }
-// });
-
 // Deleting a task
 app.delete(`/tasks/:id`, async (req, res) => {
   try {
