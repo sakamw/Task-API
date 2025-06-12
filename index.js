@@ -7,34 +7,27 @@ const client = new PrismaClient();
 app.use(express.json());
 
 app.get("/", (_req, res) => {
-  res.send("<h1> Welcome to the Task API </h1>");
+  res.send("<h1> Welcome to Saka's Task API </h1>");
 });
 
-// Creating a new tasks
-app.post("/tasks", async (req, res) => {
+// Creating a new task
+app.post("/tasks", async (req, res, next) => {
   try {
-    console.log(req.body);
     const { title, description } = req.body;
-    const newTaskApp = await client.tasks.create({
-      data: {
-        title,
-        description,
-      },
+    const newTask = await client.tasks.create({
+      data: { title, description },
     });
-    res.status(201).json(newTaskApp);
+    res.status(201).json(newTask);
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: "Something went wrong" });
+    next(e);
   }
 });
 
-// Getting all the tasks
-app.get("/tasks", async (_req, res) => {
+// Getting all tasks
+app.get("/tasks", async (_req, res, next) => {
   try {
     const tasks = await client.tasks.findMany({
-      where: {
-        isCompleted: false,
-      },
+      where: { isCompleted: false },
       select: {
         id: true,
         title: true,
@@ -44,63 +37,58 @@ app.get("/tasks", async (_req, res) => {
     });
     res.status(200).json(tasks);
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: "Something went wrong!!" });
+    next(e);
   }
 });
 
-//  Getting a specific task by ID
-app.get("/tasks/:id", async (req, res) => {
+// Getting a specific task by ID
+app.get("/tasks/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const tasks = await client.tasks.findFirst({
-      where: {
-        id,
-      },
-    });
-    if (!tasks) {
-      return req.status(404).json({ message: "Task not found" });
-    }
-    res.status(200).json(tasks);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: "Something went wrong!!" });
-  }
-});
-
-app.put("/tasks/:id", async (req, res) => {
-  try {
-    const { title, description, isCompleted } = req.body;
-    const { id } = req.params;
-    const tasks = await client.tasks.update({
+    const task = await client.tasks.findFirst({
       where: { id },
-      data: {
-        title,
-        description,
-        isCompleted,
-      },
     });
-    res.status(200).json(tasks);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    res.status(200).json(task);
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: "Something went wrong!!" });
+    next(e);
+  }
+});
+
+// Updating a task
+app.put("/tasks/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { title, description, isCompleted } = req.body;
+    const updatedTask = await client.tasks.update({
+      where: { id },
+      data: { title, description, isCompleted },
+    });
+    res.status(200).json(updatedTask);
+  } catch (e) {
+    next(e);
   }
 });
 
 // Deleting a task
-app.delete(`/tasks/:id`, async (req, res) => {
+app.delete("/tasks/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    await client.tasks.delete({
-      where: { id },
-    });
-    return res.status(200).json({
-      message: `Task deleted `,
-    });
-  } catch (error) {
-    console.error(e);
-    res.status(500).json({ message: `Something went wrong` });
+    await client.tasks.delete({ where: { id } });
+    res.status(200).json({ message: "Task deleted" });
+  } catch (e) {
+    next(e);
   }
+});
+
+app.use((err, req, res, next) => {
+  console.error("Unhandled Error:", err);
+  res.status(500).json({
+    message: "Something went wrong!",
+    error: err.message || "Internal server error",
+  });
 });
 
 const port = process.env.PORT || 3500;
