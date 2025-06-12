@@ -10,6 +10,7 @@ app.get("/", (_req, res) => {
   res.send("<h1> Welcome to the Task API </h1>");
 });
 
+// Creating a new tasks
 app.post("/tasks", async (req, res) => {
   try {
     console.log(req.body);
@@ -27,6 +28,7 @@ app.post("/tasks", async (req, res) => {
   }
 });
 
+// Getting all the tasks
 app.get("/tasks", async (_req, res) => {
   try {
     const tasks = await client.tasks.findMany({
@@ -37,8 +39,28 @@ app.get("/tasks", async (_req, res) => {
         id: true,
         title: true,
         description: true,
+        isCompleted: true,
       },
     });
+    res.status(200).json(tasks);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Something went wrong!!" });
+  }
+});
+
+//  Getting a specific task by ID
+app.get("/tasks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const tasks = await client.tasks.findFirst({
+      where: {
+        id,
+      },
+    });
+    if (!tasks) {
+      return req.status(404).json({ message: "Task not found" });
+    }
     res.status(200).json(tasks);
   } catch (e) {
     console.error(e);
