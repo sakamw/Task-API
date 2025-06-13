@@ -37,7 +37,7 @@ app.get("/tasks", async (_req, res) => {
     });
     res.status(200).json(tasks);
   } catch (e) {
-    next(e);
+    console.error(e);
   }
 });
 
@@ -83,6 +83,7 @@ app.delete("/tasks/:id", async (req, res) => {
   }
 });
 
+// Middleware
 app.use((err, _req, res, _next) => {
   console.error("Unhandled Error:", err);
   res.status(500).json({
