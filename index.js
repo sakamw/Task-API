@@ -11,7 +11,7 @@ app.get("/", (_req, res) => {
 });
 
 // Creating a new task
-app.post("/tasks", async (req, res, next) => {
+app.post("/tasks", async (req, res) => {
   try {
     const { title, description } = req.body;
     const newTask = await client.tasks.create({
@@ -19,12 +19,12 @@ app.post("/tasks", async (req, res, next) => {
     });
     res.status(201).json(newTask);
   } catch (e) {
-    next(e);
+    console.error(e);
   }
 });
 
 // Getting all tasks
-app.get("/tasks", async (_req, res, next) => {
+app.get("/tasks", async (_req, res) => {
   try {
     const tasks = await client.tasks.findMany({
       where: { isCompleted: false },
@@ -42,7 +42,7 @@ app.get("/tasks", async (_req, res, next) => {
 });
 
 // Getting a specific task by ID
-app.get("/tasks/:id", async (req, res, next) => {
+app.get("/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const task = await client.tasks.findFirst({
@@ -53,12 +53,12 @@ app.get("/tasks/:id", async (req, res, next) => {
     }
     res.status(200).json(task);
   } catch (e) {
-    next(e);
+    console.error(e);
   }
 });
 
 // Updating a task
-app.put("/tasks/:id", async (req, res, next) => {
+app.put("/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, isCompleted } = req.body;
@@ -68,22 +68,22 @@ app.put("/tasks/:id", async (req, res, next) => {
     });
     res.status(200).json(updatedTask);
   } catch (e) {
-    next(e);
+    console.log(e);
   }
 });
 
 // Deleting a task
-app.delete("/tasks/:id", async (req, res, next) => {
+app.delete("/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params;
     await client.tasks.delete({ where: { id } });
     res.status(200).json({ message: "Task deleted" });
   } catch (e) {
-    next(e);
+    console.error(e);
   }
 });
 
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
   console.error("Unhandled Error:", err);
   res.status(500).json({
     message: "Something went wrong!",
